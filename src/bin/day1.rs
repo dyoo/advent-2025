@@ -12,6 +12,13 @@ fn read_input() -> Vec<i32> {
 
 fn main() {
     println!("Day 1");
-    println!("{:?}", read_input());
-    //let mut dial = 50;
+    let mut count_zeros = 0;
+    let mut dial = 50;
+    for direction in read_input() {
+        dial = (dial + direction).rem_euclid(100);
+        if dial == 0 {
+            count_zeros += 1;
+        }
+    }
+    println!("count_zeros: {}", count_zeros);
 }
