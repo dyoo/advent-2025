@@ -56,6 +56,10 @@ fn test_part1() {
 }
 
 fn is_repeating_slice<T: PartialEq>(slice: &[T], n: usize) -> bool {
+    if slice.len() % n != 0 {
+        return false;
+    }
+
     for i in 0..slice.len() {
         if slice[i] != slice[i % n] {
             return false;
@@ -94,6 +98,8 @@ fn test_is_bad2() {
     assert!(is_bad2(12) == false);
     assert!(is_bad2(22));
     assert!(is_bad2(12341234));
+
+    assert!(is_bad2(4834834) == false);
 }
 
 fn part2(input: &[RangeInclusive<u64>]) -> u64 {
@@ -117,4 +123,5 @@ fn test_part2() {
 fn main() {
     let input = read_input(stdin().lock());
     println!("Part 1: {:?}", part1(&input));
+    println!("Part 1: {:?}", part2(&input));
 }
