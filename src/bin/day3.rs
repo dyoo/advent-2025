@@ -1,6 +1,6 @@
 use aoc2025::{count_digits, implode_digits};
 use std::cmp::max;
-use std::collections::HashMap;
+use std::collections::{HashMap, hash_map::Entry};
 use std::io::{BufRead, stdin};
 
 #[derive(Debug)]
@@ -59,20 +59,28 @@ fn search(
     capacity: usize,
     cache: &mut HashMap<(usize, usize), u64>,
 ) -> u64 {
-    if capacity > voltages[start..].len() {
-        return 0;
-    } else if capacity == voltages[start..].len() {
-        return implode_digits(&voltages[start..]);
-    } else if capacity == 1 {
-        return *voltages[start..].iter().max().expect("empty voltages") as u64;
+    if let Entry::Occupied(o) = cache.entry((start, capacity)) {
+        return *o.get();
     }
 
-    let picking_first = search(voltages, start + 1, capacity - 1, cache);
-    let choice =
-        10u64.pow(count_digits(picking_first)) as u64 * voltages[start] as u64 + picking_first;
+    let result = {
+        if capacity > voltages[start..].len() {
+            0
+        } else if capacity == voltages[start..].len() {
+            implode_digits(&voltages[start..])
+        } else if capacity == 1 {
+            *voltages[start..].iter().max().expect("empty voltages") as u64
+        } else {
+            let picking_first = search(voltages, start + 1, capacity - 1, cache);
+            let choice = 10u64.pow(count_digits(picking_first)) as u64 * voltages[start] as u64
+                + picking_first;
 
-    let best_choice = max(choice, search(&voltages, start + 1, capacity, cache));
-    best_choice
+            max(choice, search(&voltages, start + 1, capacity, cache))
+        }
+    };
+
+    cache.insert((start, capacity), result);
+    result
 }
 
 #[test]
