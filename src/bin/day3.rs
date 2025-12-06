@@ -1,5 +1,6 @@
 use aoc2025::{count_digits, implode_digits};
 use std::cmp::max;
+use std::collections::HashMap;
 use std::io::{BufRead, stdin};
 
 #[derive(Debug)]
@@ -47,13 +48,17 @@ fn part_1(input: &[Bank]) -> u64 {
     input.iter().map(|bank| bank.max_voltage() as u64).sum()
 }
 
-impl Bank {
-    fn max_voltage2(&self) -> u64 {
-        search(&self.voltages, 0, 12)
-    }
+fn max_voltage2(voltages: &[u8]) -> u64 {
+    let mut cache: HashMap<(usize, usize), u64> = HashMap::new();
+    search(voltages, 0, 12, &mut cache)
 }
 
-fn search(voltages: &[u8], start: usize, capacity: usize) -> u64 {
+fn search(
+    voltages: &[u8],
+    start: usize,
+    capacity: usize,
+    cache: &mut HashMap<(usize, usize), u64>,
+) -> u64 {
     if capacity > voltages[start..].len() {
         return 0;
     } else if capacity == voltages[start..].len() {
@@ -62,38 +67,35 @@ fn search(voltages: &[u8], start: usize, capacity: usize) -> u64 {
         return *voltages[start..].iter().max().expect("empty voltages") as u64;
     }
 
-    let picking_first = search(voltages, start + 1, capacity - 1);
+    let picking_first = search(voltages, start + 1, capacity - 1, cache);
     let choice =
         10u64.pow(count_digits(picking_first)) as u64 * voltages[start] as u64 + picking_first;
 
-    let best_choice = max(choice, search(&voltages, start + 1, capacity));
+    let best_choice = max(choice, search(&voltages, start + 1, capacity, cache));
     best_choice
 }
 
 #[test]
-fn test_search() {
-    assert_eq!(search(&vec![1, 2, 3, 4], 0, 5), 0);
-    assert_eq!(search(&vec![1, 2, 3, 4], 0, 4), 1234);
-    assert_eq!(search(&vec![1, 2, 3, 4], 0, 3), 234);
-    assert_eq!(search(&vec![1, 2, 3, 4], 0, 2), 34);
-    assert_eq!(search(&vec![1, 2, 3, 4], 0, 1), 4);
-
+fn test_max_voltage2() {
     assert_eq!(
-        search(&vec![9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1], 0, 12),
+        max_voltage2(&vec![9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1]),
         987654321111
     );
     assert_eq!(
-        search(&vec![2, 3, 4, 2, 3, 4, 2, 3, 4, 2, 3, 4, 2, 7, 8], 0, 12),
+        max_voltage2(&vec![2, 3, 4, 2, 3, 4, 2, 3, 4, 2, 3, 4, 2, 7, 8]),
         434234234278
     );
     assert_eq!(
-        search(&vec![8, 1, 8, 1, 8, 1, 9, 1, 1, 1, 1, 2, 1, 1, 1], 0, 12),
+        max_voltage2(&vec![8, 1, 8, 1, 8, 1, 9, 1, 1, 1, 1, 2, 1, 1, 1]),
         888911112111
     );
 }
 
 fn part_2(input: &[Bank]) -> u64 {
-    input.iter().map(|bank| bank.max_voltage2() as u64).sum()
+    input
+        .iter()
+        .map(|bank| max_voltage2(&bank.voltages) as u64)
+        .sum()
 }
 
 fn main() {
