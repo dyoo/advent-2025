@@ -36,7 +36,6 @@ fn test_get_digits() {
     assert_eq!(get_digits(31337), vec![3, 1, 3, 3, 7]);
 }
 
-
 pub fn implode_digits(digits: &[u8]) -> u64 {
     let mut result = 0;
     for d in digits {
@@ -47,5 +46,5 @@ pub fn implode_digits(digits: &[u8]) -> u64 {
 
 #[test]
 fn test_implode_digits() {
-    assert_eq!(implode_digits(&[1,2,3,4]), 1234);
+    assert_eq!(implode_digits(&[1, 2, 3, 4]), 1234);
 }
