@@ -44,45 +44,51 @@ fn part_1(input: &[Bank]) -> u64 {
 
 impl Bank {
     fn max_voltage2(&self) -> u64 {
-        search(&self.voltages, 12)
+        search(&self.voltages, 0, 12)
     }
 }
 
-fn search(voltages: &[u8], capacity: usize) -> u64 {
-    if capacity > voltages.len() {
+fn search(voltages: &[u8], start: usize, capacity: usize) -> u64 {
+    if capacity > voltages[start..].len() {
         return 0;
-    } else if capacity == voltages.len() {
-        return implode_digits(voltages);
+    } else if capacity == voltages[start..].len() {
+        return implode_digits(&voltages[start..]);
     } else if capacity == 1 {
-        return *voltages.iter().max().expect("empty voltages") as u64;
+        return *voltages[start..].iter().max().expect("empty voltages") as u64;
     } 
 
-    let picking_first = search(&voltages[1..], capacity-1);
+    let picking_first = search(voltages, start + 1, capacity-1);
     let choice =
-        10u64.pow(count_digits(picking_first)) as u64 * voltages[0] as u64 + picking_first;
+        10u64.pow(count_digits(picking_first)) as u64 * voltages[start] as u64 + picking_first;
 
-    let best_choice = max(choice, search(&voltages[1..], capacity));
+    let best_choice = max(choice, search(&voltages, start + 1, capacity));
     best_choice
 }
 
 #[test]
 fn test_search() {
-    assert_eq!(search(&vec![1,2,3,4], 5), 0);
-    assert_eq!(search(&vec![1,2,3,4], 4), 1234);
-    assert_eq!(search(&vec![1,2,3,4], 3), 234);
-    assert_eq!(search(&vec![1,2,3,4], 2), 34);
-    assert_eq!(search(&vec![1,2,3,4], 1), 4);
+    assert_eq!(search(&vec![1,2,3,4], 0, 5), 0);
+    assert_eq!(search(&vec![1,2,3,4], 0, 4), 1234);
+    assert_eq!(search(&vec![1,2,3,4], 0, 3), 234);
+    assert_eq!(search(&vec![1,2,3,4], 0, 2), 34);
+    assert_eq!(search(&vec![1,2,3,4], 0, 1), 4);
 
-    assert_eq!(search(&vec![9,8,7,6,5,4,3,2,1,1,1,1,1,1,1], 12),
+    assert_eq!(search(&vec![9,8,7,6,5,4,3,2,1,1,1,1,1,1,1], 0, 12),
         987654321111);
-    assert_eq!(search(&vec![2,3,4,2,3,4,2,3,4,2,3,4,2,7,8], 12),
+    assert_eq!(search(&vec![2,3,4,2,3,4,2,3,4,2,3,4,2,7,8], 0, 12),
         434234234278);
-    assert_eq!(search(&vec![8,1,8,1,8,1,9,1,1,1,1,2,1,1,1], 12),
+    assert_eq!(search(&vec![8,1,8,1,8,1,9,1,1,1,1,2,1,1,1], 0, 12),
         888911112111);
+}
+
+
+fn part_2(input: &[Bank]) -> u64 {
+    input.iter().map(|bank| bank.max_voltage2() as u64).sum()
 }
 
 
 fn main() {
     let input = read_input(stdin().lock());
     println!("Part 1: {:?}", part_1(&input));
+    println!("Part 2: {:?}", part_2(&input));
 }
