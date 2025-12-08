@@ -90,9 +90,9 @@ fn merge_ranges(ranges: &[RangeInclusive<u64>]) -> Vec<RangeInclusive<u64>> {
 
 #[test]
 fn test_merge_ranges() {
-    assert_eq!(merge_ranges(&vec![1..=1, 2..=2]),  vec![1..=1, 2..=2]);
-    assert_eq!(merge_ranges(&vec![1..=1, 1..=100]),  vec![1..=100]);
-    assert_eq!(merge_ranges(&vec![1..=100, 1..=1]),  vec![1..=100]);
+    assert_eq!(merge_ranges(&vec![1..=1, 2..=2]), vec![1..=1, 2..=2]);
+    assert_eq!(merge_ranges(&vec![1..=1, 1..=100]), vec![1..=100]);
+    assert_eq!(merge_ranges(&vec![1..=100, 1..=1]), vec![1..=100]);
 }
 
 fn part_2(problem: &Problem) -> u64 {
@@ -122,7 +122,6 @@ fn test_part2() {
     );
     assert_eq!(part_2(&problem), 14);
 }
-
 
 fn main() {
     let problem = parse(stdin().lock());

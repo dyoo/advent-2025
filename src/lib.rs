@@ -135,6 +135,13 @@ pub trait Overlaps {
 
 impl Overlaps for RangeInclusive<u64> {
     fn overlaps(&self, other: &Self) -> bool {
-        self.end() > other.start() && self.start() < other.end()
+        self.end() >= other.start() && self.start() <= other.end()
     }
+}
+
+#[test]
+fn test_overlaps() {
+    assert!((1..=1).overlaps(&(1..=100)));
+    assert!((1..=1).overlaps(&(1..=1)));
+    assert!((1..=1).overlaps(&(2..=2)) == false);
 }
