@@ -1,4 +1,5 @@
 use std::io::BufRead;
+use std::ops::RangeInclusive;
 
 pub fn count_digits(n: u64) -> u32 {
     if n == 0 {
@@ -125,5 +126,15 @@ impl std::fmt::Display for Grid {
             write!(f, "{}\n", std::str::from_utf8(&line).expect("utf8"))?;
         }
         Ok(())
+    }
+}
+
+pub trait Overlaps {
+    fn overlaps(&self, other: &Self) -> bool;
+}
+
+impl Overlaps for RangeInclusive<u64> {
+    fn overlaps(&self, other: &Self) -> bool {
+        self.end() > other.start() && self.start() < other.end()
     }
 }
