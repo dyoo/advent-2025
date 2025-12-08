@@ -89,6 +89,10 @@ impl Grid {
         self.lines[y][x]
     }
 
+    pub fn set(&mut self, (x, y): (usize, usize), val: u8) {
+        self.lines[y][x] = val;
+    }
+
     pub fn positions(&self) -> impl Iterator<Item = (usize, usize)> {
         (0..self.height()).flat_map(|y| (0..self.width()).map(move |x| (x, y)))
     }
