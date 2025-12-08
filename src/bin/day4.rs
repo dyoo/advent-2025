@@ -1,44 +1,32 @@
-use std::io::{BufRead, stdin};
+use aoc2025::Grid;
+use std::io::stdin;
 
-#[derive(Debug)]
-struct Grid {
-    lines: Vec<Vec<u8>>,
+fn part_1(grid: &Grid) -> usize {
+    let paper_positions = grid.positions().filter(|pos| grid.at(*pos) == b'@');
+    let fewer_than_four = paper_positions
+        .filter(|pos| grid.neighbors(*pos).filter(|p| grid.at(*p) == b'@').count() < 4);
+
+    fewer_than_four.count()
 }
 
-impl Grid {
-    fn width(&self) -> usize {
-        self.lines[0].len()
-    }
-
-    fn height(&self) -> usize {
-        self.lines.len()
-    }
-
-    fn at(&self, x: usize, y: usize) -> u8 {
-        self.lines[y][x]
-    }
-}
-
-impl std::fmt::Display for Grid {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        for line in &self.lines {
-            write!(f, "{}\n", std::str::from_utf8(&line).expect("utf8"))?;
-        }
-        Ok(())
-    }
-}
-
-fn read_input(buf_read: impl BufRead) -> Grid {
-    let lines = buf_read
-        .lines()
-        .filter_map(|l| l.ok())
-        .map(|l| l.as_bytes().into_iter().copied().collect())
-        .collect();
-    Grid { lines }
+#[test]
+fn test_part1() {
+    let data = "..@@.@@@@.
+@@@.@.@.@@
+@@@@@.@.@@
+@.@@@@..@.
+@@.@@@@.@@
+.@@@@@@@.@
+.@.@.@.@@@
+@.@@@.@@@@
+.@@@@@@@@.
+@.@.@@@.@."
+        .as_bytes();
+    let input = Grid::new(data);
+    assert_eq!(part_1(&input), 13);
 }
 
 fn main() {
-    let input = read_input(stdin().lock());
-    println!("{} {}", input.width(), input.height());
-    println!("{}", input);
+    let input = Grid::new(stdin().lock());
+    println!("Part 1: {}", part_1(&input));
 }
