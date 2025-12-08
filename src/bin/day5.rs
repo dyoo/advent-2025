@@ -36,7 +36,39 @@ fn parse(buf: impl BufRead) -> Problem {
     Problem { fresh, ingredients }
 }
 
+fn part_1(problem: &Problem) -> usize {
+    problem
+        .ingredients
+        .iter()
+        .filter(|ingredient| {
+            problem
+                .fresh
+                .iter()
+                .any(move |range| range.contains(ingredient))
+        })
+        .count()
+}
+
+#[test]
+fn test_part1() {
+    let problem = parse(
+        "3-5
+10-14
+16-20
+12-18
+
+1
+5
+8
+11
+17
+32"
+        .as_bytes(),
+    );
+    assert_eq!(part_1(&problem), 3);
+}
+
 fn main() {
     let problem = parse(stdin().lock());
-    println!("{:?}", problem);
+    println!("{:?}", part_1(&problem));
 }
