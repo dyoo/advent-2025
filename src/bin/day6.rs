@@ -1,4 +1,4 @@
-use std::io::BufRead;
+use std::io::{BufRead, BufReader, read_to_string};
 
 #[derive(Debug, PartialEq)]
 enum Op {
@@ -28,7 +28,10 @@ struct Problem {
     ops: Vec<Op>,
 }
 
-fn parse(buf: impl BufRead) -> Problem {
+fn parse(
+    buf: impl BufRead,
+    extract_column: fn(number_lines: &[Vec<u8>], start: usize, end: usize) -> Vec<Option<u64>>,
+) -> Problem {
     let lines: Vec<Vec<u8>> = buf
         .lines()
         .filter_map(|l| l.ok().map(|s| s.to_string().into_bytes()))
@@ -43,18 +46,10 @@ fn parse(buf: impl BufRead) -> Problem {
     let mut columns = Vec::new();
     let mut ops = Vec::new();
 
-    let extract_column = |start, end| {
-        number_lines
-            .iter()
-            .map(move |l| std::str::from_utf8(&l[start..end]).expect("utf8"))
-            .map(|s| s.trim().parse::<u64>().ok())
-            .collect::<Vec<Option<u64>>>()
-    };
-
     for (index, ch) in operator_line.iter().enumerate() {
         if *ch == b'*' || *ch == b'+' {
             if let Some((start, _)) = indexes {
-                columns.push(extract_column(start, index - 1));
+                columns.push(extract_column(number_lines, start, index - 1));
                 ops.push(operator);
 
                 operator = if *ch == b'*' { Op::Mul } else { Op::Add };
@@ -73,11 +68,19 @@ fn parse(buf: impl BufRead) -> Problem {
     }
     // Handle last column.
     if let Some((start, _)) = indexes {
-        columns.push(extract_column(start, operator_line.len()));
+        columns.push(extract_column(number_lines, start, operator_line.len()));
         ops.push(operator);
     }
 
     Problem { columns, ops }
+}
+
+fn extract_column(number_lines: &[Vec<u8>], start: usize, end: usize) -> Vec<Option<u64>> {
+    number_lines
+        .iter()
+        .map(move |l| std::str::from_utf8(&l[start..end]).expect("utf8"))
+        .map(|s| s.trim().parse::<u64>().ok())
+        .collect::<Vec<Option<u64>>>()
 }
 
 #[test]
@@ -87,7 +90,7 @@ fn test_parse() {
   6 98  215 314
 *   +   *   +  ";
     assert_eq!(
-        parse(data.as_bytes()),
+        parse(data.as_bytes(), extract_column),
         Problem {
             columns: vec![
                 vec![Some(123), Some(45), Some(6)],
@@ -120,11 +123,13 @@ fn test_part_1() {
  45 64  387 23 
   6 98  215 314
 *   +   *   +  ";
-    let problem = parse(data.as_bytes());
+    let problem = parse(data.as_bytes(), extract_column);
     assert_eq!(part_1(&problem), 4277556);
 }
 
 fn main() {
-    let problem = parse(std::io::stdin().lock());
+    let reader = BufReader::new(std::io::stdin().lock());
+    let content = read_to_string(reader).expect("reading file");
+    let problem = parse(content.as_bytes(), extract_column);
     println!("Part 1: {}", part_1(&problem))
 }
