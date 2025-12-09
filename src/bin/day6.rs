@@ -103,7 +103,7 @@ fn test_parse() {
     );
 }
 
-fn part_1(problem: &Problem) -> u64 {
+fn evaluate(problem: &Problem) -> u64 {
     (0..problem.ops.len())
         .map(|i| {
             let op = &problem.ops[i];
@@ -112,24 +112,51 @@ fn part_1(problem: &Problem) -> u64 {
 
             column
                 .iter()
-                .fold(op.zero(), move |x, y| op.f(x, y.unwrap_or(op.zero())))
+                .fold(zero, move |x, y| op.f(x, y.unwrap_or(zero)))
         })
         .sum()
 }
 
 #[test]
-fn test_part_1() {
+fn test_evaluate() {
     let data = "123 328  51 64 
  45 64  387 23 
   6 98  215 314
 *   +   *   +  ";
     let problem = parse(data.as_bytes(), extract_column);
-    assert_eq!(part_1(&problem), 4277556);
+    assert_eq!(evaluate(&problem), 4277556);
+}
+
+fn extract_column2(number_lines: &[Vec<u8>], start: usize, end: usize) -> Vec<Option<u64>> {
+    (start..end)
+        .map(|i| {
+            let single_column: Vec<u8> =
+                number_lines.iter().map(|line| line[i]).collect::<Vec<_>>();
+            let s: &str = std::str::from_utf8(&single_column)
+                .expect("reading column")
+                .trim();
+            s.parse::<u64>().ok()
+        })
+        .collect()
+}
+
+#[test]
+fn test_part_2() {
+    let data = "123 328  51 64 
+ 45 64  387 23 
+  6 98  215 314
+*   +   *   +  ";
+    let problem = parse(data.as_bytes(), extract_column2);
+    assert_eq!(evaluate(&problem), 3263827);
 }
 
 fn main() {
     let reader = BufReader::new(std::io::stdin().lock());
     let content = read_to_string(reader).expect("reading file");
+
     let problem = parse(content.as_bytes(), extract_column);
-    println!("Part 1: {}", part_1(&problem))
+    println!("Part 1: {}", evaluate(&problem));
+
+    let problem = parse(content.as_bytes(), extract_column2);
+    println!("Part 2: {}", evaluate(&problem));
 }
