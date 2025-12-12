@@ -68,6 +68,8 @@ const NEIGHBOR_DELTAS: [(isize, isize); 8] = [
     (1, 1),
 ];
 
+pub type Pos = (usize, usize);
+
 impl Grid {
     pub fn new(buf_read: impl BufRead) -> Self {
         let lines = buf_read
@@ -86,19 +88,19 @@ impl Grid {
         self.lines.len()
     }
 
-    pub fn at(&self, (x, y): (usize, usize)) -> u8 {
+    pub fn at(&self, (x, y): Pos) -> u8 {
         self.lines[y][x]
     }
 
-    pub fn set(&mut self, (x, y): (usize, usize), val: u8) {
+    pub fn set(&mut self, (x, y): Pos, val: u8) {
         self.lines[y][x] = val;
     }
 
-    pub fn positions(&self) -> impl Iterator<Item = (usize, usize)> {
+    pub fn positions(&self) -> impl Iterator<Item = Pos> {
         (0..self.height()).flat_map(|y| (0..self.width()).map(move |x| (x, y)))
     }
 
-    pub fn pos_plus(&self, p1: (usize, usize), delta: (isize, isize)) -> Option<(usize, usize)> {
+    pub fn pos_plus(&self, p1: Pos, delta: (isize, isize)) -> Option<Pos> {
         let x = p1.0.checked_add_signed(delta.0)?;
         if x >= self.width() {
             return None;
@@ -113,7 +115,7 @@ impl Grid {
         Some((x, y))
     }
 
-    pub fn neighbors(&self, pos: (usize, usize)) -> impl Iterator<Item = (usize, usize)> {
+    pub fn neighbors(&self, pos: Pos) -> impl Iterator<Item = Pos> {
         NEIGHBOR_DELTAS
             .into_iter()
             .filter_map(move |delta| self.pos_plus(pos, delta))
