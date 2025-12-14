@@ -90,6 +90,35 @@ fn part_1(points: &[Point], n_to_pair: usize, n_biggest: usize) -> usize {
     sizes[sizes.len()-n_biggest..].iter().fold(1, |x, y| x * y)
 }
 
+
+fn part_2(points: &[Point]) -> u64 {
+    let n = points.len();
+    
+    let metrics = metric_between_pairs(points);
+
+    let mut union_set = UnionSet::new(n);
+    for metric in metrics {
+        union_set.merge(metric.1, metric.2);
+
+        // Check the size of the component that 0 is in.  If it's n,
+        // we're fully connected and can stop.
+        let mut sizes = vec![0; n];
+        for i in 0..n {
+            let index = union_set.id(i);
+            sizes[index] += 1;
+        }
+        if sizes[union_set.id(0)] == n {
+            return points[metric.1].0 * points[metric.2].0;
+        }
+    }
+
+    // Defensive; we should never get here.
+    return 0;
+}
+
+
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -130,9 +159,16 @@ mod tests {
         let points = parse(DATA.as_bytes());
         assert_eq!(part_1(&points, 10, 3), 40);
     }
+
+    #[test]
+    fn test_part_2() {
+        let points = parse(DATA.as_bytes());
+        assert_eq!(part_2(&points), 25272);
+    }
 }
 
 fn main()  {
     let problem = parse(io::stdin().lock());
     println!("{:?}", part_1(&problem, 1000, 3));
+    println!("{:?}", part_2(&problem));
 }
