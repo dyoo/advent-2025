@@ -1,10 +1,11 @@
-use std::io::BufRead;
 use std::io;
+use std::io::BufRead;
 
 type Point = (u64, u64, u64);
 
 fn parse(buf: impl BufRead) -> Vec<Point> {
-    buf.lines().filter_map(|l|l.ok())
+    buf.lines()
+        .filter_map(|l| l.ok())
         .map(|l| {
             let mut chunks = l.split(',');
             let x = chunks.next().expect("x").parse().expect("number");
@@ -16,15 +17,14 @@ fn parse(buf: impl BufRead) -> Vec<Point> {
 }
 
 fn dist_sq(a: Point, b: Point) -> u64 {
-    a.0.abs_diff(b.0).pow(2) +
-        a.1.abs_diff(b.1).pow(2) +
-        a.2.abs_diff(b.2).pow(2)
+    a.0.abs_diff(b.0).pow(2) + a.1.abs_diff(b.1).pow(2) + a.2.abs_diff(b.2).pow(2)
 }
-
 
 // Compute the dist_sq metric between points.  i < j, returning a list of them in increasing metric.
 fn metric_between_pairs(points: &[Point]) -> Vec<(u64, usize, usize)> {
-    let mut result: Vec<(u64, usize, usize)> = (0..points.len()).flat_map(|i| (i+1..points.len()).map(move |j| (dist_sq(points[i], points[j]), i, j))).collect();
+    let mut result: Vec<(u64, usize, usize)> = (0..points.len())
+        .flat_map(|i| (i + 1..points.len()).map(move |j| (dist_sq(points[i], points[j]), i, j)))
+        .collect();
 
     result.sort();
     result
@@ -37,7 +37,7 @@ struct UnionSet {
 impl UnionSet {
     fn new(n: usize) -> Self {
         let up = (0..n).map(|i| i).collect();
-        Self {up}
+        Self { up }
     }
 
     fn merge(&mut self, i: usize, j: usize) {
@@ -45,12 +45,12 @@ impl UnionSet {
         let j_id = self.id(j);
         self.up[i_id] = j_id;
     }
-    
+
     fn id(&mut self, i: usize) -> usize {
         if self.up[i] == i {
             return i;
         }
-        
+
         let mut to_change = vec![i];
         let mut i = self.up[i];
         loop {
@@ -66,14 +66,14 @@ impl UnionSet {
         for item in to_change {
             self.up[item] = i;
         }
-        
+
         i
     }
 }
 
 fn part_1(points: &[Point], n_to_pair: usize, n_biggest: usize) -> usize {
     let n = points.len();
-    
+
     let metrics = metric_between_pairs(points);
 
     let mut union_set = UnionSet::new(n);
@@ -87,13 +87,14 @@ fn part_1(points: &[Point], n_to_pair: usize, n_biggest: usize) -> usize {
         sizes[index] += 1;
     }
     sizes.sort();
-    sizes[sizes.len()-n_biggest..].iter().fold(1, |x, y| x * y)
+    sizes[sizes.len() - n_biggest..]
+        .iter()
+        .fold(1, |x, y| x * y)
 }
-
 
 fn part_2(points: &[Point]) -> u64 {
     let n = points.len();
-    
+
     let metrics = metric_between_pairs(points);
 
     let mut union_set = UnionSet::new(n);
@@ -115,9 +116,6 @@ fn part_2(points: &[Point]) -> u64 {
     // Defensive; we should never get here.
     return 0;
 }
-
-
-
 
 #[cfg(test)]
 mod tests {
@@ -142,15 +140,15 @@ mod tests {
 862,61,35
 984,92,344
 425,690,689";
-    
+
     #[test]
     fn test_metric_between_pairs() {
         let points = parse(DATA.as_bytes());
         let metrics = metric_between_pairs(&points);
-        assert_eq!(metrics[0].1, 0);  // 162,817,812
+        assert_eq!(metrics[0].1, 0); // 162,817,812
         assert_eq!(metrics[0].2, 19); // 425,690,689
 
-        assert_eq!(metrics[1].1, 0);  // 162,817,812
+        assert_eq!(metrics[1].1, 0); // 162,817,812
         assert_eq!(metrics[1].2, 7); // 431,825,988
     }
 
@@ -167,7 +165,7 @@ mod tests {
     }
 }
 
-fn main()  {
+fn main() {
     let problem = parse(io::stdin().lock());
     println!("{:?}", part_1(&problem, 1000, 3));
     println!("{:?}", part_2(&problem));
