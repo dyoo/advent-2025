@@ -117,6 +117,15 @@ fn part_1(problems: &[Problem]) -> usize {
         .sum()
 }
 
+
+fn part_2(problems: &[Problem]) -> usize {
+    problems
+        .into_iter()
+        .map(find_fewest_presses_for_joltage)
+        .sum()
+}
+
+
 fn increment_joltage(joltage: &[usize], schematics: &[usize]) -> Vec<usize> {
     let mut result = Vec::from(joltage);
     for b in schematics {
@@ -212,6 +221,11 @@ fn test_find_fewest_presses_for_joltage_3() {
     assert_eq!(find_fewest_presses_for_joltage(&problem), 11);
 }
 
+// Notes: we'll want to look into
+// https://docs.rs/good_lp/latest/good_lp/index.html to do a linear
+// programming solver approach, following the sketch of
+// https://medium.com/@sergey.chelak/my-point-on-advent-of-code-2025-days-10-12-2d9232940b04.
+
 fn main() {
     let problems: Vec<Problem> = stdin()
         .lock()
@@ -220,4 +234,5 @@ fn main() {
         .flat_map(|line| parse_line(&line))
         .collect();
     println!("Part 1: {:?}", part_1(&problems));
+    println!("Part 2: {:?}", part_2(&problems));
 }
