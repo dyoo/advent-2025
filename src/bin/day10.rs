@@ -1,6 +1,7 @@
+use good_lp::{
+    Expression, ProblemVariables, Solution, SolverModel, Variable, default_solver, variable,
+};
 use std::cmp::Ord;
-use std::cmp::Reverse;
-use std::collections::BinaryHeap;
 use std::collections::HashSet;
 use std::io::BufRead;
 use std::io::stdin;
@@ -151,51 +152,38 @@ fn joltage_distance_approximation(x: &[usize], y: &[usize]) -> usize {
         .expect("non-empty joltage")
 }
 
-#[derive(PartialOrd, Ord, PartialEq, Eq)]
-struct Element {
-    estimate_to_goal: usize,
-    clicks: usize,
-    joltage: Vec<usize>,
-}
-
 fn find_fewest_presses_for_joltage(p: &Problem) -> usize {
-    // We'll do an A* approach, using joltage_distance_approximation
-    // as our heuristic guiding us through the search space.
+    let mut problem_variables = ProblemVariables::new();
+    let button_presses: Vec<Variable> =
+        problem_variables.add_all(vec![variable().min(0).integer(); p.schematics.len()]);
+    let goal = button_presses.iter().sum::<Expression>();
+    let problem = problem_variables.minimise(&goal).using(default_solver);
 
-    let initial_joltage = vec![0usize; p.indicator.len()];
-    let goal_joltage = p.joltage.clone();
+    let constraints = p
+        .joltage
+        .iter()
+        .enumerate()
+        .map(|(index, &goal)| {
+            button_presses
+                .iter()
+                .zip(p.schematics.iter())
+                .filter_map(|(button_press, schematic)| {
+                    if let Some(_) = schematic.iter().find(|&&v| v == index) {
+                        Some(button_press)
+                    } else {
+                        None
+                    }
+                })
+                .sum::<Expression>()
+                .eq(goal as u32)
+        })
+        .collect::<Vec<_>>();
 
-    let mut priority_queue = BinaryHeap::new();
-    priority_queue.push(Reverse(Element {
-        estimate_to_goal: joltage_distance_approximation(&initial_joltage, &goal_joltage),
-        clicks: 0,
-        joltage: initial_joltage,
-    }));
-
-    while !priority_queue.is_empty() {
-        let Some(Reverse(element)) = priority_queue.pop() else {
-            panic!("impossible");
-        };
-        if element.joltage == goal_joltage {
-            return element.clicks;
-        }
-
-        for schematic in &p.schematics {
-            let child_joltage = increment_joltage(&element.joltage, schematic);
-            if !joltage_le(&child_joltage, &goal_joltage) {
-                continue;
-            }
-
-            priority_queue.push(Reverse(Element {
-                estimate_to_goal: element.clicks
-                    + joltage_distance_approximation(&child_joltage, &goal_joltage),
-                clicks: element.clicks + 1,
-                joltage: child_joltage,
-            }));
-        }
-    }
-
-    panic!("Unable to find fewest presses for joltage!");
+    let solution = problem
+        .with_all(constraints)
+        .solve()
+        .expect("solver failed");
+    solution.eval(goal) as usize
 }
 
 #[test]

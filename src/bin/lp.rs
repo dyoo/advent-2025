@@ -1,32 +1,39 @@
-use good_lp::{ProblemVariables, Solution, SolverModel, default_solver, variable};
+use good_lp::{
+    Expression, ProblemVariables, Solution, SolverModel, Variable, default_solver, variable,
+};
 use std::error::Error;
 
 fn main() -> std::result::Result<(), Box<dyn Error>> {
-    let mut vars = ProblemVariables::new();
-    let x1 = vars.add(variable().min(0).integer());
-    let x2 = vars.add(variable().min(0).integer());
-    let x3 = vars.add(variable().min(0).integer());
-    let x4 = vars.add(variable().min(0).integer());
+    let mut problem_variables = ProblemVariables::new();
+    let vars: Vec<Variable> = problem_variables.add_all(vec![variable().min(0).integer(); 4]);
 
-    let problem = vars.minimise(x1 + x2 + x3 + x4).using(default_solver);
+    let goal = vars.iter().sum::<Expression>();
+    let problem = problem_variables.minimise(goal).using(default_solver);
 
-    let solution = problem
-        // urban
-        .with((-2 * x1 + 8 * x2 + 10 * x4).geq(50))
-        // suburban
-        .with((5 * x1 + 2 * x2).geq(100))
-        //rural
-        .with((3 * x1 + -5 * x2 + 10 * x3 - 2 * x4).geq(25))
-        .solve()?;
+    let data = [
+        ([-2, 8, 0, 10], 50),
+        ([5, 2, 0, 0], 100),
+        ([3, -5, 10, -2], 25),
+    ];
+    let constraints = data
+        .iter()
+        .map(|(vals, goal)| {
+            vals.iter()
+                .zip(vars.iter())
+                .map(|(&x, &y)| x * y)
+                .sum::<Expression>()
+                .geq(*goal)
+        })
+        .collect::<Vec<_>>();
 
+    println!("{:?}", constraints);
+
+    let solution = problem.with_all(constraints).solve()?;
     println!(
-        "a={:?}",
-        vec![
-            solution.value(x1),
-            solution.value(x2),
-            solution.value(x3),
-            solution.value(x4)
-        ]
+        "{:?}",
+        vars.iter()
+            .map(|var| solution.value(*var))
+            .collect::<Vec<_>>()
     );
 
     Ok(())
