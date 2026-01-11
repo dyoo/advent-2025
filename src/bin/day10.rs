@@ -117,14 +117,12 @@ fn part_1(problems: &[Problem]) -> usize {
         .sum()
 }
 
-
 fn part_2(problems: &[Problem]) -> usize {
     problems
         .into_iter()
         .map(find_fewest_presses_for_joltage)
         .sum()
 }
-
 
 fn increment_joltage(joltage: &[usize], schematics: &[usize]) -> Vec<usize> {
     let mut result = Vec::from(joltage);
