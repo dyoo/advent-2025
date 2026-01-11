@@ -1,22 +1,33 @@
-use good_lp::{Solution, SolverModel, variable, ProblemVariables};
-use good_lp::solvers::lpsolve;
+use good_lp::{ProblemVariables, Solution, SolverModel, default_solver, variable};
 use std::error::Error;
 
 fn main() -> std::result::Result<(), Box<dyn Error>> {
     let mut vars = ProblemVariables::new();
-    let a = vars.add(variable().max(9));
-    let b = vars.add(variable().min(2).max(4));
+    let x1 = vars.add(variable().min(0).integer());
+    let x2 = vars.add(variable().min(0).integer());
+    let x3 = vars.add(variable().min(0).integer());
+    let x4 = vars.add(variable().min(0).integer());
 
-    let problem = vars
-        .maximise(10 * (a - b / 5) - b)
-        .using(lpsolve::lp_solve);
-  
+    let problem = vars.minimise(x1 + x2 + x3 + x4).using(default_solver);
+
     let solution = problem
-        .with((a + 2).leq(b))
-        .with((1 + a).geq(4. - b))
+        // urban
+        .with((-2 * x1 + 8 * x2 + 10 * x4).geq(50))
+        // suburban
+        .with((5 * x1 + 2 * x2).geq(100))
+        //rural
+        .with((3 * x1 + -5 * x2 + 10 * x3 - 2 * x4).geq(25))
         .solve()?;
 
-    println!("a={:?}, b={:?}", solution.value(a), solution.value(b));
+    println!(
+        "a={:?}",
+        vec![
+            solution.value(x1),
+            solution.value(x2),
+            solution.value(x3),
+            solution.value(x4)
+        ]
+    );
 
     Ok(())
 }
