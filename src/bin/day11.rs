@@ -55,7 +55,7 @@ hhh: ccc fff iii
 iii: out"
         .as_bytes();
     let graph = parse_graph(input);
-    assert_eq!(count_paths_to_out(&graph, &vec![&"you".to_string()]), 5);
+    assert_eq!(count_paths_to_out(&graph, &[&"you".to_string()]), 5);
 }
 
 fn part_2(graph: &Graph, path: &[&String], mut visited_fft: bool, mut visited_dac: bool) -> usize {
@@ -101,18 +101,18 @@ ggg: out
 hhh: out"
         .as_bytes();
     let graph = parse_graph(input);
-    assert_eq!(part_2(&graph, &vec![&"svr".to_string()], false, false), 2);
+    assert_eq!(part_2(&graph, &[&"svr".to_string()], false, false), 2);
 }
 
 fn main() {
     let graph = parse_graph(stdin().lock());
     println!(
         "Part 1: {}",
-        count_paths_to_out(&graph, &vec![&"you".to_string()])
+        count_paths_to_out(&graph, &[&"you".to_string()])
     );
 
     println!(
         "Part 2: {}",
-        part_2(&graph, &vec![&"svr".to_string()], false, false)
+        part_2(&graph, &[&"svr".to_string()], false, false)
     );
 }
