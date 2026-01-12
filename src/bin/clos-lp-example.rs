@@ -16,17 +16,15 @@ fn main() -> std::result::Result<(), Box<dyn Error>> {
         ([3, -5, 10, -2], 25),
     ];
     let constraints = data
-        .iter()
+        .into_iter()
         .map(|(vals, goal)| {
             vals.iter()
                 .zip(vars.iter())
                 .map(|(&x, &y)| x * y)
                 .sum::<Expression>()
-                .geq(*goal)
+                .geq(goal)
         })
         .collect::<Vec<_>>();
-
-    println!("{:?}", constraints);
 
     let solution = problem.with_all(constraints).solve()?;
     println!(
