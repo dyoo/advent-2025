@@ -74,8 +74,8 @@ impl Grid {
     pub fn new(buf_read: impl BufRead) -> Self {
         let lines = buf_read
             .lines()
-            .filter_map(|l| l.ok())
-            .map(|l| l.as_bytes().into_iter().copied().collect())
+            .map_while(|l| l.ok())
+            .map(|l| l.as_bytes().to_vec())
             .collect();
         Self { lines }
     }
@@ -125,7 +125,7 @@ impl Grid {
 impl std::fmt::Display for Grid {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         for line in &self.lines {
-            write!(f, "{}\n", std::str::from_utf8(&line).expect("utf8"))?;
+            writeln!(f, "{}", std::str::from_utf8(line).expect("utf8"))?;
         }
         Ok(())
     }

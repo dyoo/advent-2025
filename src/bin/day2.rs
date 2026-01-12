@@ -6,7 +6,7 @@ use aoc2025::{count_digits, get_digits};
 fn read_input(buf_read: impl BufRead) -> Vec<RangeInclusive<u64>> {
     buf_read
         .lines()
-        .filter_map(|s| s.ok())
+        .map_while(|s| s.ok())
         .flat_map(|s| s.split(",").map(|s| s.to_string()).collect::<Vec<String>>())
         .filter(|s| !s.is_empty())
         .map(|s: String| {
@@ -20,7 +20,7 @@ fn read_input(buf_read: impl BufRead) -> Vec<RangeInclusive<u64>> {
 
 fn is_bad(n: u64) -> bool {
     let digits = count_digits(n);
-    if digits < 2 || digits % 2 != 0 {
+    if digits < 2 || !digits.is_multiple_of(2) {
         return false;
     }
 
@@ -56,7 +56,7 @@ fn test_part1() {
 }
 
 fn is_repeating_slice<T: PartialEq>(slice: &[T], n: usize) -> bool {
-    if slice.len() % n != 0 {
+    if !slice.len().is_multiple_of(n) {
         return false;
     }
 

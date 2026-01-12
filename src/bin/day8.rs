@@ -5,7 +5,7 @@ type Point = (u64, u64, u64);
 
 fn parse(buf: impl BufRead) -> Vec<Point> {
     buf.lines()
-        .filter_map(|l| l.ok())
+        .map_while(|l| l.ok())
         .map(|l| {
             let mut chunks = l.split(',');
             let x = chunks.next().expect("x").parse().expect("number");
@@ -36,7 +36,7 @@ struct UnionSet {
 
 impl UnionSet {
     fn new(n: usize) -> Self {
-        let up = (0..n).map(|i| i).collect();
+        let up = (0..n).collect();
         Self { up }
     }
 
@@ -87,9 +87,7 @@ fn part_1(points: &[Point], n_to_pair: usize, n_biggest: usize) -> usize {
         sizes[index] += 1;
     }
     sizes.sort();
-    sizes[sizes.len() - n_biggest..]
-        .iter()
-        .fold(1, |x, y| x * y)
+    sizes[sizes.len() - n_biggest..].iter().product()
 }
 
 fn part_2(points: &[Point]) -> u64 {
@@ -114,7 +112,7 @@ fn part_2(points: &[Point]) -> u64 {
     }
 
     // Defensive; we should never get here.
-    return 0;
+    0
 }
 
 #[cfg(test)]

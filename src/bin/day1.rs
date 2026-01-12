@@ -3,9 +3,9 @@ use std::io::stdin;
 fn read_directions() -> Vec<i32> {
     stdin()
         .lines()
-        .filter_map(|s| s.ok())
+        .map_while(|s| s.ok())
         .map(|s| {
-            (if s.starts_with("L") { -1 } else { 1 }) * &s[1..].parse::<i32>().expect("parse error")
+            (if s.starts_with("L") { -1 } else { 1 }) * s[1..].parse::<i32>().expect("parse error")
         })
         .collect()
 }

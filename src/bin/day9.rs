@@ -5,7 +5,7 @@ type Point = (u64, u64);
 
 fn parse(buf: impl BufRead) -> Vec<Point> {
     buf.lines()
-        .filter_map(|l| l.ok())
+        .map_while(|l| l.ok())
         .map(|l| {
             let mut chunks = l.split(',');
             let x: u64 = chunks.next().expect("first").parse().expect("number");

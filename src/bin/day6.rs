@@ -28,10 +28,10 @@ struct Problem {
     ops: Vec<Op>,
 }
 
-fn parse(
-    buf: impl BufRead,
-    extract_column: fn(number_lines: &[Vec<u8>], start: usize, end: usize) -> Vec<Option<u64>>,
-) -> Problem {
+// Type of a function that knows how to extract a column of optional numbers, given the column offsets.
+type ExtractColumn = fn(number_lines: &[Vec<u8>], start: usize, end: usize) -> Vec<Option<u64>>;
+
+fn parse(buf: impl BufRead, extract_column: ExtractColumn) -> Problem {
     let lines: Vec<Vec<u8>> = buf
         .lines()
         .filter_map(|l| l.ok().map(|s| s.to_string().into_bytes()))
@@ -58,12 +58,10 @@ fn parse(
                 indexes = Some((index, index));
                 operator = if *ch == b'*' { Op::Mul } else { Op::Add };
             }
+        } else if let Some((start, _)) = indexes {
+            indexes = Some((start, index));
         } else {
-            if let Some((start, _)) = indexes {
-                indexes = Some((start, index));
-            } else {
-                indexes = Some((index, index));
-            }
+            indexes = Some((index, index));
         }
     }
     // Handle last column.

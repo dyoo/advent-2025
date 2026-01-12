@@ -11,14 +11,14 @@ struct Problem {
 }
 
 fn parse(buf: impl BufRead) -> Problem {
-    let mut lines = buf.lines().filter_map(|l| l.ok());
+    let mut lines = buf.lines().map_while(|l| l.ok());
     let mut fresh = Vec::new();
 
     loop {
         let Some(line) = lines.next() else {
             break;
         };
-        if line == "" {
+        if line.is_empty() {
             break;
         }
         let mut range_elements = line.split('-');

@@ -11,9 +11,9 @@ struct Bank {
 fn read_input(buf_read: impl BufRead) -> Vec<Bank> {
     buf_read
         .lines()
-        .filter_map(|l| l.ok())
+        .map_while(|l| l.ok())
         .map(|l| Bank {
-            voltages: l.as_bytes().into_iter().map(|b| b - b'0').collect(),
+            voltages: l.as_bytes().iter().map(|b| b - b'0').collect(),
         })
         .collect()
 }
@@ -75,7 +75,7 @@ fn search(
             let choice = 10u64.pow(count_digits(picking_first)) as u64 * voltages[start] as u64
                 + picking_first;
 
-            max(choice, search(&voltages, start + 1, capacity, cache))
+            max(choice, search(voltages, start + 1, capacity, cache))
         }
     };
 
@@ -100,10 +100,7 @@ fn test_max_voltage2() {
 }
 
 fn part_2(input: &[Bank]) -> u64 {
-    input
-        .iter()
-        .map(|bank| max_voltage2(&bank.voltages) as u64)
-        .sum()
+    input.iter().map(|bank| max_voltage2(&bank.voltages)).sum()
 }
 
 fn main() {

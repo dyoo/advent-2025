@@ -1,7 +1,6 @@
 use good_lp::{
     Expression, ProblemVariables, Solution, SolverModel, Variable, default_solver, variable,
 };
-use std::cmp::Ord;
 use std::collections::HashSet;
 use std::io::BufRead;
 use std::io::stdin;
@@ -14,12 +13,8 @@ struct Problem {
 }
 
 fn parse_indicator(line: &str) -> Option<Vec<bool>> {
-    let Some(indicator_start) = line.find('[') else {
-        return None;
-    };
-    let Some(indicator_end) = line.find(']') else {
-        return None;
-    };
+    let indicator_start = line.find('[')?;
+    let indicator_end = line.find(']')?;
     Some(
         line.as_bytes()[indicator_start + 1..indicator_end]
             .iter()
@@ -37,9 +32,7 @@ fn parse_comma_separated(s: &str) -> Vec<usize> {
 
 fn parse_line(line: &str) -> Option<Problem> {
     let chunks: Vec<&str> = line.split(" ").collect();
-    let Some(indicator) = parse_indicator(chunks[0]) else {
-        return None;
-    };
+    let indicator = parse_indicator(chunks[0])?;
     let schematics = chunks[1..chunks.len() - 1]
         .iter()
         .map(|&chunk| parse_comma_separated(chunk))
@@ -113,43 +106,13 @@ fn test_find_fewest_presses_for_indicators_3() {
 
 fn part_1(problems: &[Problem]) -> usize {
     problems
-        .into_iter()
+        .iter()
         .map(find_fewest_presses_for_indicators)
         .sum()
 }
 
 fn part_2(problems: &[Problem]) -> usize {
-    problems
-        .into_iter()
-        .map(find_fewest_presses_for_joltage)
-        .sum()
-}
-
-fn increment_joltage(joltage: &[usize], schematics: &[usize]) -> Vec<usize> {
-    let mut result = Vec::from(joltage);
-    for b in schematics {
-        result[*b] += 1;
-    }
-    result
-}
-
-#[test]
-fn test_increment_joltage() {
-    assert_eq!(increment_joltage(&[0, 1, 2, 3], &[1, 3]), vec![0, 2, 2, 4]);
-}
-
-/// Check that all the values in x are <= those in y.
-fn joltage_le(x: &[usize], y: &[usize]) -> bool {
-    x.iter().zip(y).all(|(x, y)| x <= y)
-}
-
-// We approximate the "distance" between x and y as the max componentwise distance.
-fn joltage_distance_approximation(x: &[usize], y: &[usize]) -> usize {
-    x.iter()
-        .zip(y)
-        .map(|(x, y)| x.abs_diff(*y))
-        .max()
-        .expect("non-empty joltage")
+    problems.iter().map(find_fewest_presses_for_joltage).sum()
 }
 
 fn find_fewest_presses_for_joltage(p: &Problem) -> usize {
@@ -168,7 +131,7 @@ fn find_fewest_presses_for_joltage(p: &Problem) -> usize {
                 .iter()
                 .zip(p.schematics.iter())
                 .filter_map(|(button_press, schematic)| {
-                    if let Some(_) = schematic.iter().find(|&&v| v == index) {
+                    if schematic.contains(&index) {
                         Some(button_press)
                     } else {
                         None
@@ -216,7 +179,7 @@ fn main() {
     let problems: Vec<Problem> = stdin()
         .lock()
         .lines()
-        .filter_map(|line| line.ok())
+        .map_while(|line| line.ok())
         .flat_map(|line| parse_line(&line))
         .collect();
     println!("Part 1: {:?}", part_1(&problems));
