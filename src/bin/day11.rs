@@ -58,10 +58,61 @@ iii: out"
     assert_eq!(count_paths_to_out(&graph, &vec![&"you".to_string()]), 5);
 }
 
+fn part_2(graph: &Graph, path: &[&String], mut visited_fft: bool, mut visited_dac: bool) -> usize {
+    let at = path.last().copied().expect("empty path");
+    if at == "out" {
+        return if visited_fft && visited_dac { 1 } else { 0 };
+    } else if at == "fft" {
+        visited_fft = true;
+    } else if at == "dac" {
+        visited_dac = true;
+    }
+
+    let empty = vec![];
+    let children = graph
+        .get(at)
+        .unwrap_or(&empty)
+        .iter()
+        .filter(|child| !path.contains(child));
+
+    children
+        .map(|child| {
+            let mut new_path = path.to_vec();
+            new_path.push(child);
+            part_2(graph, &new_path, visited_fft, visited_dac)
+        })
+        .sum()
+}
+
+#[test]
+fn test_part_2() {
+    let input = "svr: aaa bbb
+aaa: fft
+fft: ccc
+bbb: tty
+tty: ccc
+ccc: ddd eee
+ddd: hub
+hub: fff
+eee: dac
+dac: fff
+fff: ggg hhh
+ggg: out
+hhh: out"
+        .as_bytes();
+    let graph = parse_graph(input);
+    assert_eq!(part_2(&graph, &vec![&"svr".to_string()], false, false), 2);
+}
+
 fn main() {
     let graph = parse_graph(stdin().lock());
     println!(
         "Part 1: {}",
         count_paths_to_out(&graph, &vec![&"you".to_string()])
+    );
+
+    println!(
+        "Part 2: {}",
+        part_2(&graph, &vec![&"svr".to_string()], false, false)
     );
 }
